@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,user-scalable=no">
+    <title>Router</title>
+</head>
+<body>
+
+<script type="text/javascript" src="../dist/router.js"></script>
+<script type="text/javascript">
+
+function test(){
+    var router = new Router({
+        defaultRoute:"route2",
+        beforeRouteChange:function(route){
+            console.log(route,"beforeRouteChange");
+            return true;
+        }
+    });
+    var route4 = function(){
+        console.log(arguments,"route4-0")
+    }
+    router.route("route1/:name/:age",function(name,age){
+        console.log(name,age)
+
+        console.log(arguments,"route1")
+    })
+    .route("route2",function(name){
+
+        console.log(arguments,"route2")
+    })
+    .route("route3",function(name){
+
+        console.log(arguments,"route3")
+    })
+    .route("route4",route4)
+    .route("route4",function(name){
+        console.log(arguments,"route4-1")
+    })
+    .route("/",function(name){
+        console.log("defaultRoute")
+    })
+    .start();
+
+    console.log(router)
+}
+test();
+</script>
+</body>
+</html>
