@@ -21,10 +21,10 @@
  *          },
  *          'detail/:id':function(id){
  *              //可获取到id参数
- *              console.log(id);
+ *              console.log(id)
  *          }
  *     }
- * });
+ * })
  * ```
  */
 
@@ -33,21 +33,22 @@
         namedParam = /(\(\?)?:\w+/g,
         splatParam = /\*\w+/g,
         escapeRegExp = /[\-{}\[\]+?.,\\\^$|#\s]/g,
-        hashRegExp = /#(.*)$/;
+        hashRegExp = /#(.*)$/
 
-    var _window = this,
+    var _window = window,
         _location = _window.location,
-        _history = _window.history;
+        _history = _window.history
 
     //('onhashchange' in _window)
     var POPSTATE_EVENT = 'popstate',
-        CHANGE_EVENT = _history.replaceState ? POPSTATE_EVENT : 'hashchange';
+        CHANGE_EVENT = _history.replaceState ? POPSTATE_EVENT : 'hashchange'
 
     var extend = function(target,source){
         for(var name in source){
-            source.hasOwnProperty(name) && source[name] !== undefined && (target[name] = source[name]);
+            source.hasOwnProperty(name) && source[name] !== undefined && (target[name] = source[name])
         }
-        return source;
+
+        return target
     }
 
     function Router(options) {
@@ -55,16 +56,16 @@
             defaultRoute: '/',
             routes: {},
             beforeRouteChange: null
-        }, options || {});
+        }, options || {})
 
         //缓存所有路由
-        this.routes = [];
+        this.routes = []
 
-        var routes = this.options.routes || {};
+        var routes = this.options.routes || {}
 
         for (var name in routes) {
             if (routes.hasOwnProperty(name)) {
-                this.route(name, routes[name]);
+                this.route(name, routes[name])
             }
         }
     }
@@ -73,49 +74,53 @@
         route = route.replace(escapeRegExp, '\\$&')
             .replace(optionalParam, '(?:$1)?')
             .replace(namedParam, function(match, optional) {
-                return optional ? match : '([^/?]+)';
+                return optional ? match : '([^/?]+)'
             })
-            .replace(splatParam, '([^?]*?)');
-        return new RegExp('^' + route + '(?:\\?([\\s\\S]*))?$');
+            .replace(splatParam, '([^?]*?)')
+        return new RegExp('^' + route + '(?:\\?([\\s\\S]*))?$')
     }
 
     var extractParameters = function(route, fragment) {
-        var params = route.exec(fragment).slice(1);
+        var params = route.exec(fragment).slice(1)
         return params.map(function(param, i) {
             // Don't decode the search params.
-            if (i === params.length - 1) return param || null;
-            return param ? decodeURIComponent(param) : null;
-        });
+            if (i === params.length - 1) return param || null
+            return param ? decodeURIComponent(param) : null
+        })
+    }
+
+    var updateUrlHash = function(url,route){
+        return url && url.replace(/#(.*)$/, '') + '#' + route
     }
 
     //更新hash
     var updateHash = function(router, route, replace) {
-        var url = router.updateHash(_location.href, route);
+        var url = updateUrlHash(_location.href, route)
 
         if (CHANGE_EVENT === POPSTATE_EVENT) {
-            _history[replace ? 'replaceState' : 'pushState']({}, document.title, url);
+            _history[replace ? 'replaceState' : 'pushState']({}, document.title, url)
         } else {
             if (replace) {
-                _location.replace(url);
+                _location.replace(url)
             } else {
                 // Some browsers require that `hash` contains a leading #.
-                _location.hash = '#' + route;
+                _location.hash = '#' + route
             }
         }
     }
 
     //获取hash值
     var getHash = function(url) {
-        var match = url.match(hashRegExp);
-        return match ? match[1] : '';
+        var match = url.match(hashRegExp)
+        return match ? match[1] : ''
     }
 
     //获取更新hash后的url
     var getUpdatedHash = function(url, route) {
-        return url && url.replace(hashRegExp, '') + '#' + route;
+        return url && url.replace(hashRegExp, '') + '#' + route
     }
 
-    var _prototype = Router.prototype;
+    var _prototype = Router.prototype
 
     /**
      * ## getCurrentRoute
@@ -123,8 +128,8 @@
      * @return {String} 当前路由
      */
     _prototype.getCurrentRoute = function() {
-        return this._currentRoute;
-    };
+        return this._currentRoute
+    }
 
     /**
      * ## start
@@ -133,26 +138,26 @@
      * @return {instance} 当前实例
      */
     _prototype.start = function() {
-        if (this._started) return this;
-        var self = this;
+        if (this._started) return this
+        var self = this
 
-        this._started = true;
+        this._started = true
 
         //监听事件
         this._run = function(event) {
             return self.navigate(getHash(event.target.location.hash), {
                 updateHash: false
-            });
-        };
-        _window.addEventListener(CHANGE_EVENT, this._run);
+            })
+        }
+        _window.addEventListener(CHANGE_EVENT, this._run)
 
         //根据hash执行事件
         self.navigate(getHash(_location.href), {
             updateHash: false
-        });
+        })
 
-        return self;
-    };
+        return self
+    }
 
     /**
      * ## stop
@@ -162,10 +167,10 @@
      * @return {instance} 当前实例
      */
     _prototype.stop = function() {
-        _window.removeEventListener(CHANGE_EVENT, this._run);
-        this._started = false;
-        return this;
-    };
+        _window.removeEventListener(CHANGE_EVENT, this._run)
+        this._started = false
+        return this
+    }
 
     /**
      * ## navigate
@@ -179,28 +184,28 @@
     _prototype.navigate = function(route, opts) {
         var self = this,
             options = self.options,
-            f = true;
+            f = true
 
         //解决重复执行问题
-        if (self._currentRoute === route) return self;
+        if (self._currentRoute === route) return self
 
         opts = extend({
             trigger: true,
             updateHash:true,
             replace: false
-        }, opts || {});
+        }, opts || {})
 
         //缓存当前route
-        self._currentRoute = route;
+        self._currentRoute = route
 
         if (!options.beforeRouteChange ||
             self._currentRoute == undefined ||
             options.beforeRouteChange.call(self, route) !== false) {
-
             opts.trigger ? self.routes.forEach(function(value) {
+
                 if (value.route.test(route)) {
-                    value.callback.apply(self, extractParameters(value.route, route));
-                    f = false;
+                    value.callback.apply(self, extractParameters(value.route, route))
+                    f = false
                 }
             }) : (f = false)
 
@@ -209,10 +214,10 @@
             //替换会出现一个问题，就是当前路由后续路由都会被替换。造成无法回退上以前的历史记录
             //
             //如果使用location.hash，则会出现后退按钮会一直无效
-            f ? options.defaultRoute && _location.replace(getUpdatedHash(_location.href, options.defaultRoute)) : opts.updateHash && updateHash(self, route, opts.replace);
+            f ? options.defaultRoute && _location.replace(getUpdatedHash(_location.href, options.defaultRoute)) : opts.updateHash && updateHash(self, route, opts.replace)
         }
-        return self;
-    };
+        return self
+    }
 
     /**
      * ## route / add
@@ -224,21 +229,21 @@
      * @return {instance} 当前实例
      */
     _prototype.route = function(route, callback) {
-        if (typeof route === 'string') route = routeToRegExp(route);
+        if (typeof route === 'string') route = routeToRegExp(route)
         this.routes.unshift({
             route: route,
             callback: callback
-        });
-        return this;
-    };
+        })
+        return this
+    }
 
     if (typeof module !== 'undefined' && module.exports) {
-        module.exports = Router;
+        module.exports = Router
     } else if (typeof define === 'function') {
         define(function() {
-            return Router;
+            return Router
         })
     } else {
-        _window.Router = Router;
+        _window.Router = Router
     }
 })()
